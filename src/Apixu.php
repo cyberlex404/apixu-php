@@ -53,10 +53,12 @@ class Apixu implements ApixuInterface
     /**
      * {@inheritdoc}
      */
-    public function current(string $query) : CurrentWeather
+    public function current(string $query, $lang = 'en') : CurrentWeather
     {
         $this->validateQuery($query);
-        $response = $this->api->call('current', ['q' => $query]);
+        $this->validateLang($lang);
+
+        $response = $this->api->call('current', ['q' => $query, 'lang' => $lang]);
 
         return $this->getResponse($response, CurrentWeather::class);
     }
@@ -72,36 +74,41 @@ class Apixu implements ApixuInterface
         return $this->getResponse($response, Search::class);
     }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function forecast(string $query, int $days, int $hour = null, $lang = 'en') : Forecast
+  {
+      $this->validateQuery($query);
+      $this->validateLang($lang);
+
+      $params = [
+        'q' => $query,
+        'days' => $days,
+        'lang' => $lang,
+      ];
+
+      if ($hour !== null) {
+          $params['hour'] = $hour;
+      }
+
+      $response = $this->api->call('forecast', $params);
+
+      return $this->getResponse($response, Forecast::class);
+  }
+
     /**
      * {@inheritdoc}
      */
-    public function forecast(string $query, int $days, int $hour = null) : Forecast
+    public function history(string $query, \DateTime $since, \DateTime $until = null, $lang = 'en') : History
     {
         $this->validateQuery($query);
-
-        $params = [
-            'q' => $query,
-            'days' => $days,
-        ];
-        if ($hour !== null) {
-            $params['hour'] = $hour;
-        }
-
-        $response = $this->api->call('forecast', $params);
-
-        return $this->getResponse($response, Forecast::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function history(string $query, \DateTime $since, \DateTime $until = null) : History
-    {
-        $this->validateQuery($query);
+        $this->validateLang($lang);
 
         $params = [
             'q' => $query,
             'dt' => $since->format(self::$historyDateFormat),
+            'lang' => $lang,
         ];
         if ($until !== null) {
             $params['end_dt'] = $until->format(self::$historyDateFormat);
@@ -128,6 +135,61 @@ class Apixu implements ApixuInterface
             throw new InvalidQueryException(
                 sprintf('Query exceeds maximum length (%d)', Config::MAX_QUERY_LENGTH)
             );
+        }
+    }
+
+    /**
+     * @param string $lang
+     *
+     * @throws \Apixu\Exception\InvalidQueryException
+     */
+    private function validateLang(string $lang)
+    {
+        $lang = trim($lang);
+
+        $availableLang = [
+          'ar',
+          'bn',
+          'bg',
+          'zh',
+          'zh_tw',
+          'cs',
+          'da',
+          'nl',
+          'fi',
+          'fr',
+          'de',
+          'el',
+          'hi',
+          'hu',
+          'it',
+          'ja',
+          'jv',
+          'ko',
+          'zh_cmn',
+          'mr',
+          'pl',
+          'pa',
+          'ro',
+          'ru',
+          'sr',
+          'si',
+          'sk',
+          'es',
+          'sv',
+          'ta',
+          'te',
+          'tr',
+          'uk',
+          'ur',
+          'vi',
+          'zh_wuu',
+          'zh_hsn',
+          'zh_yue',
+          'zu',
+        ];
+        if (!in_array($lang, $availableLang)) {
+            throw new InvalidQueryException('Language not supported');
         }
     }
 
