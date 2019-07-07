@@ -28,10 +28,11 @@ interface ApixuInterface
      * Realtime weather information by city name
      *
      * @param string $query
+     * @param string $lang
      * @return CurrentWeather
      * @throws ApixuException
      */
-    public function current(string $query) : CurrentWeather;
+    public function current(string $query, $lang = 'en') : CurrentWeather;
 
     /**
      * Finds cities and towns matching your query (autocomplete)
@@ -42,16 +43,17 @@ interface ApixuInterface
      */
     public function search(string $query) : Search;
 
-    /**
-     * Weather forecast for up to next 10 days
-     *
-     * @param string $query
-     * @param int $days
-     * @param int|null $hour Hourly forecast available for paid license only
-     * @return Forecast
-     * @throws ApixuException
-     */
-    public function forecast(string $query, int $days, int $hour = null) : Forecast;
+  /**
+   * Weather forecast for up to next 10 days
+   *
+   * @param string $query
+   * @param int $days
+   * @param int|null $hour Hourly forecast available for paid license only
+   * @param string $lang
+   * @return Forecast
+   * @throws ApixuException
+   */
+  public function forecast(string $query, int $days, int $hour = null, $lang = 'en') : Forecast;
 
     /**
      * Historical weather information for a city and a date starting 2015-01-01
@@ -59,8 +61,9 @@ interface ApixuInterface
      * @param string $query
      * @param \DateTime $since
      * @param \DateTime|null $until Range history available for paid license only
+     * @param string $lang
      * @return History
      * @throws ApixuException
      */
-    public function history(string $query, \DateTime $since, \DateTime $until = null) : History;
+    public function history(string $query, \DateTime $since, \DateTime $until = null, $lang = 'en') : History;
 }
